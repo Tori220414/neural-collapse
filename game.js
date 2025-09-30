@@ -1,5 +1,5 @@
 // Game State
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'https://neural-collapse-production.up.railway.app/api';
 let gameState = {
     player: null,
     accessToken: null,
