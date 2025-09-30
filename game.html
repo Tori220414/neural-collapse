@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Collapse - Cybernetic Survival</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Login Screen */
+        #loginScreen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0,212,255,0.3);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,212,255,0.2);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #00d4ff 0%, #00ffaa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .logo p {
+            color: #00d4ff;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(0,212,255,0.3);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 15px rgba(0,212,255,0.3);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,212,255,0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .error-message {
+            background: rgba(255,68,68,0.2);
+            border: 1px solid #ff4444;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        /* Game Screen */
+        #gameScreen {
+            display: none;
+            min-height: 100vh;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(0,212,255,0.3);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .player-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .player-level {
+            background: rgba(0,212,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid #00d4ff;
+        }
+
+        .resources {
+            display: flex;
+            gap: 20px;
+        }
+
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+
+        .resource-icon {
+            font-size: 1.2em;
+        }
+
+        .resource-amount {
+            font-weight: bold;
+            color: #00ffaa;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            background: rgba(0,0,0,0.6);
+            padding: 15px 30px;
+            display: flex;
+            gap: 15px;
+            border-bottom: 1px solid rgba(0,212,255,0.2);
+        }
+
+        .nav-tab {
+            padding: 12px 25px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,212,255,0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-tab:hover {
+            background: rgba(0,212,255,0.1);
+            border-color: #00d4ff;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            border-color: #00d4ff;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Base View */
+        .base-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .building-slot {
+            aspect-ratio: 1;
+            background: rgba(0,0,0,0.4);
+            border: 2px dashed rgba(0,212,255,0.3);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .building-slot:hover {
+            border-color: #00d4ff;
+            background: rgba(0,212,255,0.1);
+        }
+
+        .building-slot.has-building {
+            border-style: solid;
+            border-color: #00d4ff;
+            background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(0,153,204,0.1) 100%);
+        }
+
+        .building-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .building-name {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .building-level {
+            font-size: 0.8em;
+            color: #00ffaa;
+            margin-top: 5px;
+        }
+
+        .empty-slot-text {
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8em;
+        }
+
+        /* Building Menu */
+        .building-menu {
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            border: 2px solid #00d4ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .building-menu h2 {
+            color: #00d4ff;
+            margin-bottom: 20px;
+        }
+
+        .building-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .building-option {
+            background: rgba(0,212,255,0.05);
+            border: 1px solid rgba(0,212,255,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .building-option:hover {
+            background: rgba(0,212,255,0.15);
+            border-color: #00d4ff;
+            transform: translateY(-3px);
+        }
+
+        .building-option-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .building-option-icon {
+            font-size: 2em;
+        }
+
+        .building-option-info h3 {
+            color: #00d4ff;
+            margin-bottom: 5px;
+        }
+
+        .building-option-desc {
+            font-size: 0.9em;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 15px;
+        }
+
+        .building-cost {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .cost-item {
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+        }
+
+        /* Heroes View */
+        .heroes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .hero-card {
+            background: rgba(0,0,0,0.6);
+            border: 2px solid rgba(0,212,255,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .hero-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,212,255,0.3);
+        }
+
+        .hero-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .hero-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00d4ff 0%, #00ffaa 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+
+        .hero-info h3 {
+            color: #00d4ff;
+            margin-bottom: 5px;
+        }
+
+        .hero-type {
+            font-size: 0.85em;
+            color: #00ffaa;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .hero-stat {
+            background: rgba(0,0,0,0.5);
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #00ffaa;
+        }
+
+        .recruit-hero-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #00d4ff 0%, #00ffaa 100%);
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(10,10,10,0.95);
+            border: 2px solid #00d4ff;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            color: #00d4ff;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .logout-btn {
+            padding: 8px 20px;
+            background: rgba(255,68,68,0.2);
+            border: 1px solid #ff4444;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,68,68,0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen">
+        <div class="login-container">
+            <div class="logo">
+                <h1>⚡ NEURAL COLLAPSE</h1>
+                <p>Cybernetic Survival Strategy</p>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <div id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••">
+                </div>
+                <button class="btn" onclick="login()">Login</button>
+                <button class="btn btn-secondary" onclick="showRegister()">Create Account</button>
+            </div>
+
+            <div id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="regUsername" placeholder="Your username">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="regEmail" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" placeholder="••••••••">
+                </div>
+                <button class="btn" onclick="register()">Create Account</button>
+                <button class="btn btn-secondary" onclick="showLogin()">Back to Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="player-info">
+                <span class="player-name" id="playerName">Player</span>
+                <span class="player-level">Level <span id="playerLevel">1</span></span>
+            </div>
+            <div class="resources">
+                <div class="resource">
+                    <span class="resource-icon">⚡</span>
+                    <span class="resource-amount" id="energyCores">0</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">🤖</span>
+                    <span class="resource-amount" id="nanobots">0</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">🔩</span>
+                    <span class="resource-amount" id="scrapMetal">0</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">💾</span>
+                    <span class="resource-amount" id="dataChips">0</span>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="showTab('base')">🏗️ Base</div>
+            <div class="nav-tab" onclick="showTab('heroes')">👥 Heroes</div>
+            <div class="nav-tab" onclick="showTab('combat')">⚔️ Combat</div>
+            <div class="nav-tab" onclick="showTab('alliance')">🛡️ Alliance</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Base View -->
+            <div id="baseSection" class="content-section active">
+                <h2 style="color: #00d4ff; margin-bottom: 20px;">Your Base</h2>
+                <div class="base-grid" id="baseGrid"></div>
+
+                <div class="building-menu">
+                    <h2>Available Buildings</h2>
+                    <div class="building-options" id="buildingOptions"></div>
+                </div>
+            </div>
+
+            <!-- Heroes View -->
+            <div id="heroesSection" class="content-section">
+                <h2 style="color: #00d4ff; margin-bottom: 20px;">Your Heroes</h2>
+                <button class="recruit-hero-btn" onclick="recruitHero()">🎲 Recruit New Hero</button>
+                <div class="heroes-grid" id="heroesGrid"></div>
+            </div>
+
+            <!-- Combat View -->
+            <div id="combatSection" class="content-section">
+                <h2 style="color: #00d4ff; margin-bottom: 20px;">Combat</h2>
+                <p style="color: rgba(255,255,255,0.6);">Combat system coming soon...</p>
+            </div>
+
+            <!-- Alliance View -->
+            <div id="allianceSection" class="content-section">
+                <h2 style="color: #00d4ff; margin-bottom: 20px;">Alliance</h2>
+                <p style="color: rgba(255,255,255,0.6);">Alliance system coming soon...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Building Info Modal -->
+    <div id="buildingModal" class="modal">
+        <div class="modal-content" id="buildingModalContent">
+            <!-- Content will be dynamically generated -->
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

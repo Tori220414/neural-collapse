@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Collapse - Test Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .panel {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #00d4ff;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,212,255,0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            border-left: 4px solid #00d4ff;
+            display: none;
+        }
+
+        .response.show {
+            display: block;
+        }
+
+        .response.error {
+            border-left-color: #ff4444;
+        }
+
+        .response.success {
+            border-left-color: #44ff44;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .player-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Neural Collapse ⚡</h1>
+        <p style="text-align: center; margin-bottom: 30px; font-size: 18px;">
+            Cybernetic Survival Strategy Game - Test Client
+        </p>
+
+        <div class="panel">
+            <h2>🔐 Register New Player</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>Username:</label>
+                    <input type="text" id="regUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                <button type="submit">Register</button>
+            </form>
+            <div id="registerResponse" class="response"></div>
+        </div>
+
+        <div class="panel">
+            <h2>🔓 Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <div id="loginResponse" class="response"></div>
+        </div>
+
+        <div class="panel" id="playerPanel" style="display: none;">
+            <h2>👤 Player Profile</h2>
+            <div id="playerInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let currentPlayer = null;
+        let accessToken = null;
+
+        // Register Form
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+                const responseDiv = document.getElementById('registerResponse');
+
+                if (response.ok) {
+                    currentPlayer = data.player;
+                    accessToken = data.tokens.accessToken;
+
+                    responseDiv.className = 'response show success';
+                    responseDiv.innerHTML = '<strong>✅ Registration Successful!</strong><pre>' +
+                        JSON.stringify(data, null, 2) + '</pre>';
+
+                    showPlayerInfo(data.player);
+
+                    // Clear form
+                    e.target.reset();
+                } else {
+                    responseDiv.className = 'response show error';
+                    responseDiv.innerHTML = '<strong>❌ Registration Failed</strong><pre>' +
+                        JSON.stringify(data, null, 2) + '</pre>';
+                }
+            } catch (error) {
+                const responseDiv = document.getElementById('registerResponse');
+                responseDiv.className = 'response show error';
+                responseDiv.innerHTML = '<strong>❌ Error:</strong> ' + error.message;
+            }
+        });
+
+        // Login Form
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                const responseDiv = document.getElementById('loginResponse');
+
+                if (response.ok) {
+                    currentPlayer = data.player;
+                    accessToken = data.tokens.accessToken;
+
+                    responseDiv.className = 'response show success';
+                    responseDiv.innerHTML = '<strong>✅ Login Successful!</strong><pre>' +
+                        JSON.stringify(data, null, 2) + '</pre>';
+
+                    showPlayerInfo(data.player);
+
+                    // Clear form
+                    e.target.reset();
+                } else {
+                    responseDiv.className = 'response show error';
+                    responseDiv.innerHTML = '<strong>❌ Login Failed</strong><pre>' +
+                        JSON.stringify(data, null, 2) + '</pre>';
+                }
+            } catch (error) {
+                const responseDiv = document.getElementById('loginResponse');
+                responseDiv.className = 'response show error';
+                responseDiv.innerHTML = '<strong>❌ Error:</strong> ' + error.message;
+            }
+        });
+
+        function showPlayerInfo(player) {
+            document.getElementById('playerPanel').style.display = 'block';
+
+            const html = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h3 style="color: #00d4ff;">${player.username}</h3>
+                    <p style="opacity: 0.8;">${player.email}</p>
+                </div>
+
+                <div class="player-info">
+                    <div class="stat">
+                        <div class="stat-label">Level</div>
+                        <div class="stat-value">${player.level}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">XP</div>
+                        <div class="stat-value">${player.xp}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">⚡ Energy Cores</div>
+                        <div class="stat-value">${player.resources.energyCores}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">🤖 Nanobots</div>
+                        <div class="stat-value">${player.resources.nanobots}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">🔩 Scrap Metal</div>
+                        <div class="stat-value">${player.resources.scrapMetal}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">💾 Data Chips</div>
+                        <div class="stat-value">${player.resources.dataChips}</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('playerInfo').innerHTML = html;
+
+            // Scroll to player info
+            document.getElementById('playerPanel').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

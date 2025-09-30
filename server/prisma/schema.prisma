@@ -1,0 +1,202 @@
+// Prisma Schema for Neural Collapse
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// User & Authentication
+// ============================================
+
+model Player {
+  id            String   @id @default(uuid())
+  username      String   @unique
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  level         Int      @default(1)
+  xp            Int      @default(0)
+  createdAt     DateTime @default(now()) @map("created_at")
+  lastLogin     DateTime @default(now()) @map("last_login")
+
+  // Relations
+  resources     PlayerResources?
+  base          Base?
+  heroes        Hero[]
+  allianceMember AllianceMember?
+  combatLogs    CombatLog[]
+
+  @@map("players")
+}
+
+// ============================================
+// Resources
+// ============================================
+
+model PlayerResources {
+  id          String   @id @default(uuid())
+  playerId    String   @unique @map("player_id")
+  energyCores Int      @default(1000) @map("energy_cores")
+  nanobots    Int      @default(500) @map("nanobots")
+  scrapMetal  Int      @default(500) @map("scrap_metal")
+  dataChips   Int      @default(100) @map("data_chips")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@map("player_resources")
+}
+
+// ============================================
+// Base Building
+// ============================================
+
+model Base {
+  id        String     @id @default(uuid())
+  playerId  String     @unique @map("player_id")
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  player    Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  buildings Building[]
+
+  @@map("bases")
+}
+
+model Building {
+  id               String    @id @default(uuid())
+  baseId           String    @map("base_id")
+  buildingType     String    @map("building_type")
+  level            Int       @default(1)
+  positionX        Int       @map("position_x")
+  positionY        Int       @map("position_y")
+  upgradeStartTime DateTime? @map("upgrade_start_time")
+  upgradeFinishTime DateTime? @map("upgrade_finish_time")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  base             Base      @relation(fields: [baseId], references: [id], onDelete: Cascade)
+
+  @@map("buildings")
+}
+
+// ============================================
+// Heroes
+// ============================================
+
+model Hero {
+  id            String   @id @default(uuid())
+  playerId      String   @map("player_id")
+  heroType      String   @map("hero_type")
+  name          String
+  rarity        Int      @default(1) // 1-5 stars
+  level         Int      @default(1)
+  xp            Int      @default(0)
+
+  // Stats
+  health        Int      @default(100)
+  attack        Int      @default(10)
+  defense       Int      @default(10)
+  speed         Int      @default(10)
+
+  // Skills (stored as JSON string)
+  skills        String   @default("[]")
+
+  // Cybernetic Enhancements (stored as JSON string)
+  enhancements  String   @default("[]")
+
+  // Equipment slots (stored as JSON string)
+  equipment     String   @default("{}")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  player        Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@map("heroes")
+}
+
+// ============================================
+// Alliance System
+// ============================================
+
+model Alliance {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  tag         String           @unique // Alliance tag (3-5 characters)
+  leaderId    String           @map("leader_id")
+  level       Int              @default(1)
+  xp          Int              @default(0)
+  memberCount Int              @default(1) @map("member_count")
+  maxMembers  Int              @default(30) @map("max_members")
+  territory   Int              @default(0) // Territory points
+  description String?
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  members     AllianceMember[]
+
+  @@map("alliances")
+}
+
+model AllianceMember {
+  id         String   @id @default(uuid())
+  allianceId String   @map("alliance_id")
+  playerId   String   @unique @map("player_id")
+  role       String   @default("member") // leader, officer, member
+  joinedAt   DateTime @default(now()) @map("joined_at")
+
+  alliance   Alliance @relation(fields: [allianceId], references: [id], onDelete: Cascade)
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@map("alliance_members")
+}
+
+// ============================================
+// Combat System
+// ============================================
+
+model CombatLog {
+  id           String   @id @default(uuid())
+  playerId     String   @map("player_id")
+  combatType   String   @map("combat_type") // pve, pvp_attack, pvp_defense
+  opponentId   String?  @map("opponent_id") // For PvP
+  result       String   // win, lose, draw
+
+  // Combat details (stored as JSON string)
+  attackingTeam String  @map("attacking_team")
+  defendingTeam String  @map("defending_team")
+  combatLog     String  @map("combat_log") // Turn-by-turn actions
+
+  // Rewards (stored as JSON string)
+  rewards       String  @default("{}")
+
+  timestamp    DateTime @default(now())
+
+  player       Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@map("combat_logs")
+}
+
+// ============================================
+// Game Events & Missions
+// ============================================
+
+model Mission {
+  id          String   @id @default(uuid())
+  missionType String   @map("mission_type") // story, daily, weekly, event
+  name        String
+  description String
+
+  // Requirements (stored as JSON string)
+  requirements String  @default("{}")
+
+  // Rewards (stored as JSON string)
+  rewards      String  @default("{}")
+
+  isActive    Boolean  @default(true) @map("is_active")
+  startTime   DateTime @map("start_time")
+  endTime     DateTime? @map("end_time")
+
+  @@map("missions")
+}

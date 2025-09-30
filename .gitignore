@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+server/node_modules/
+
+# Build output
+dist/
+build/
+server/dist/
+
+# Environment variables
+.env
+server/.env
+
+# Database
+*.db
+*.db-journal
+server/*.db
+server/*.db-journal
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+server/logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Testing
+coverage/
+
+# Prisma
+server/prisma/migrations/
+
+# Vercel
+.vercel
+
+# Railway
+.railway
+
+# Temporary files
+*.tmp
+.cache/
+
+# Unity
+NeuralCollapseClient/Library/
+NeuralCollapseClient/Temp/
+NeuralCollapseClient/Obj/
+NeuralCollapseClient/Build/
+NeuralCollapseClient/Builds/
+NeuralCollapseClient/Logs/
+NeuralCollapseClient/UserSettings/
+NeuralCollapseClient/*.csproj
+NeuralCollapseClient/*.sln
+NeuralCollapseClient/*.pidb
+NeuralCollapseClient/*.unityproj
+NeuralCollapseClient/*.suo
