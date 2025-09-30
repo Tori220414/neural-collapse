@@ -2,10 +2,10 @@
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["cd server && npm install --ignore-scripts"]
+cmds = ["cd server && npm install", "cd server && npx prisma generate"]
 
 [phases.build]
 cmds = ["cd server && npm run build"]
 
 [start]
-cmd = "cd server && npm start"
+cmd = "cd server && npx prisma migrate deploy && node dist/server.js"
