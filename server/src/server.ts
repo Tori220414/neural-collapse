@@ -81,22 +81,39 @@ process.on('SIGINT', shutdown);
 // Start server
 const startServer = async () => {
   try {
+    console.log('🔧 Starting Neural Collapse server...');
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔌 PORT: ${PORT}`);
+
     // Connect to databases
+    console.log('🔌 Connecting to database...');
     await connectDatabase();
+    console.log('✅ Database connected');
+
+    console.log('🔌 Connecting to Redis...');
     await connectRedis();
+    console.log('✅ Redis connection handled');
 
     // Start listening
     httpServer.listen(PORT, () => {
+      console.log(`🚀 Server is running on port ${PORT}`);
+      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🎮 Neural Collapse server started successfully`);
       logger.info(`🚀 Server is running on port ${PORT}`);
       logger.info(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       logger.info(`🎮 Neural Collapse server started successfully`);
     });
   } catch (error) {
+    console.error('❌ Failed to start server:', error);
     logger.error('Failed to start server:', error);
     process.exit(1);
   }
 };
 
-startServer();
+console.log('🎬 Initializing server startup...');
+startServer().catch((error) => {
+  console.error('❌ Unhandled error during startup:', error);
+  process.exit(1);
+});
 
 export { app, io };
