@@ -3,7 +3,7 @@ import logger from '../utils/logger';
 
 let redisClient: ReturnType<typeof createClient> | null = null;
 
-const REDIS_ENABLED = process.env.REDIS_ENABLED !== 'false';
+const REDIS_ENABLED = process.env.REDIS_ENABLED === 'true';
 console.log(`🔍 REDIS_ENABLED env var: "${process.env.REDIS_ENABLED}"`);
 console.log(`🔍 REDIS_ENABLED computed: ${REDIS_ENABLED}`);
 
