@@ -4,6 +4,8 @@ import logger from '../utils/logger';
 let redisClient: ReturnType<typeof createClient> | null = null;
 
 const REDIS_ENABLED = process.env.REDIS_ENABLED !== 'false';
+console.log(`🔍 REDIS_ENABLED env var: "${process.env.REDIS_ENABLED}"`);
+console.log(`🔍 REDIS_ENABLED computed: ${REDIS_ENABLED}`);
 
 if (REDIS_ENABLED) {
   redisClient = createClient({
@@ -24,14 +26,19 @@ if (REDIS_ENABLED) {
 }
 
 export const connectRedis = async (): Promise<void> => {
+  console.log(`🔌 connectRedis called - REDIS_ENABLED: ${REDIS_ENABLED}, redisClient: ${redisClient ? 'exists' : 'null'}`);
   if (!REDIS_ENABLED || !redisClient) {
+    console.log('✅ Redis is disabled - running without cache');
     logger.info('Redis is disabled - running without cache');
     return;
   }
 
   try {
+    console.log('🔌 Attempting to connect to Redis...');
     await redisClient.connect();
+    console.log('✅ Redis connected successfully');
   } catch (error) {
+    console.error('❌ Redis connection failed (continuing without cache):', error);
     logger.error('Redis connection failed (continuing without cache):', error);
   }
 };
